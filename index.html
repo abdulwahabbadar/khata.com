@@ -696,45 +696,165 @@
 
     const saved = localStorage.getItem("khata-data");
 
-
-
     if (saved) {
-
-        state = JSON.parse(saved);
-
+        try {
+            state = JSON.parse(saved);
+        } catch(e) {
+            state = { customers: [], inventory: [], capitalEntries: [], expenses: [], stockPurchases: [], shop: null };
+        }
     } else {
-
         state = {
-
             customers: [],
-
             inventory: [],
-
             capitalEntries: [],
-
             expenses: [],
-
             stockPurchases: [],
-
             shop: null
-
         };
-
     }
 
-    view = state.shop ? { screen:'home', customerId:null } : { screen:'setup', customerId:null };
+    if(state.shop){
+        view = hasBiometricCredential()
+          ? { screen:'lock', customerId:null }
+          : { screen:'biometricSetup', customerId:null };
+    } else {
+        view = { screen:'setup', customerId:null };
+    }
 
-
-
+    sessionUnlocked = false;
     render();
 
 }
 
 function saveState() {
-
     localStorage.setItem("khata-data", JSON.stringify(state));
-
 }
+
+
+// ---------- BIOMETRIC / FINGERPRINT LOCK ----------
+  const BIOMETRIC_KEY = 'my-khata-biometric-v1';
+
+  function hasBiometricCredential(){
+    return !!localStorage.getItem(BIOMETRIC_KEY);
+  }
+
+  function bytesToBase64Url(bytes){
+    let binary='';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+
+  function base64UrlToBytes(base64url){
+    const base64 = base64url.replace(/-/g,'+').replace(/_/g,'/');
+    const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+    const binary = atob(padded);
+    return Uint8Array.from(binary, c => c.charCodeAt(0));
+  }
+
+  async function biometricAvailable(){
+    try{
+      if(!window.isSecureContext || !window.PublicKeyCredential || !navigator.credentials) return false;
+      if(!PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) return false;
+      return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    }catch(e){
+      return false;
+    }
+  }
+
+  async function registerBiometric(){
+    const available = await biometricAvailable();
+    if(!available){
+      showToast('Fingerprint is not available here. Use HTTPS and a phone with biometric lock.');
+      return false;
+    }
+
+    try{
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const userId = crypto.getRandomValues(new Uint8Array(16));
+      const credential = await navigator.credentials.create({
+        publicKey:{
+          challenge,
+          rp:{ name:'My Khata', id:location.hostname },
+          user:{
+            id:userId,
+            name:'my-khata-user',
+            displayName:state.shop?.ownerName || 'My Khata'
+          },
+          pubKeyCredParams:[
+            {type:'public-key',alg:-7},
+            {type:'public-key',alg:-257}
+          ],
+          authenticatorSelection:{
+            authenticatorAttachment:'platform',
+            userVerification:'required',
+            residentKey:'preferred'
+          },
+          timeout:60000,
+          attestation:'none'
+        }
+      });
+
+      if(!credential) throw new Error('No biometric credential created');
+
+      localStorage.setItem(BIOMETRIC_KEY, JSON.stringify({
+        id:bytesToBase64Url(new Uint8Array(credential.rawId)),
+        createdAt:Date.now()
+      }));
+
+      return true;
+    }catch(e){
+      showToast(e && e.name==='NotAllowedError' ? 'Fingerprint setup cancelled.' : 'Fingerprint setup failed.');
+      return false;
+    }
+  }
+
+  async function unlockWithBiometric(){
+    const saved = localStorage.getItem(BIOMETRIC_KEY);
+    if(!saved){
+      view={screen:'biometricSetup',customerId:null};
+      render();
+      return;
+    }
+
+    const available = await biometricAvailable();
+    if(!available){
+      showToast('Fingerprint is not available. Open this app on a supported HTTPS device.');
+      return;
+    }
+
+    try{
+      const info = JSON.parse(saved);
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+
+      const assertion = await navigator.credentials.get({
+        publicKey:{
+          challenge,
+          allowCredentials:[{
+            type:'public-key',
+            id:base64UrlToBytes(info.id)
+          }],
+          userVerification:'required',
+          timeout:60000
+        }
+      });
+
+      if(!assertion) throw new Error('Biometric verification failed');
+
+      sessionUnlocked=true;
+      view={screen:'home',customerId:null};
+      render();
+    }catch(e){
+      showToast(e && e.name==='NotAllowedError' ? 'Fingerprint verification cancelled.' : 'Fingerprint verification failed.');
+    }
+  }
+
+  function lockApp(){
+    if(!hasBiometricCredential()) return;
+    sessionUnlocked=false;
+    modal=null;
+    view={screen:'lock',customerId:null};
+    render();
+  }
 
   
 
@@ -1193,8 +1313,14 @@ function saveState() {
 
 
     if(view.screen === 'setup'){ root.appendChild(renderSetup()); return; }
+    if(view.screen === 'biometricSetup'){ root.appendChild(renderBiometricSetup()); return; }
+    if(view.screen === 'lock'){ root.appendChild(renderLockScreen()); return; }
 
-
+    if(!sessionUnlocked){
+      view={screen:'lock',customerId:null};
+      root.appendChild(renderLockScreen());
+      return;
+    }
 
     root.appendChild(renderHeader());
 
@@ -1241,11 +1367,13 @@ function saveState() {
       <div><h1>${escapeHtml(shopTitle())}</h1><div class="sub">Customer credit ledger, stock &amp; finance</div></div>
 
       <div style="display:flex;align-items:center;gap:4px;">
+        <button class="lock-btn" id="lock-app-btn" title="Lock with Fingerprint">🔒</button>
         <button class="lock-btn" id="reset-all-btn" title="Delete All Data">🗑️</button>
       </div>
 
     `;
 
+    h.querySelector('#lock-app-btn').onclick = lockApp;
     h.querySelector('#reset-all-btn').onclick = ()=>{ modal={type:'resetAll'}; render(); };
 
     return h;
@@ -1293,51 +1421,75 @@ function saveState() {
   function renderSetup(){
 
     const wrap = document.createElement('div');
-
     wrap.className = 'auth-wrap';
-
     wrap.innerHTML = `
-
       <div class="auth-card">
-
         <h1>📒 Welcome</h1>
-
-        <div class="auth-sub">Set up your Khata to get started</div>
-
+        <div class="auth-sub">Set up your Khata. Fingerprint will be required to open it.</div>
         <div class="field">
-
           <label>Your Name (required)</label>
-
           <input type="text" id="su-owner" placeholder="e.g. Ahmed" autofocus>
-
         </div>
-
-        <button class="auth-btn" id="su-go">Get Started</button>
-
+        <button class="auth-btn" id="su-go">🖐️ Continue with Fingerprint</button>
       </div>
-
     `;
 
-    wrap.querySelector('#su-go').onclick = ()=>{
-
+    wrap.querySelector('#su-go').onclick = async ()=>{
       const owner = wrap.querySelector('#su-owner').value.trim();
-
       if(!owner){ showToast('Please enter your name'); return; }
 
       state.shop = { ownerName: capitalizeFirst(owner), shopName: null };
+      const ok = await registerBiometric();
+
+      if(!ok){
+        state.shop = null;
+        return;
+      }
 
       saveState();
-
       sessionUnlocked = true;
-
-      view = { screen:'home', customerId:null };
-
+      view = { screen:'home',customerId:null };
       render();
-
     };
 
     return wrap;
+  }
 
+  function renderBiometricSetup(){
+    const wrap=document.createElement('div');
+    wrap.className='auth-wrap';
+    wrap.innerHTML=`
+      <div class="auth-card">
+        <h1>🖐️ Fingerprint Lock</h1>
+        <div class="auth-sub">Your Khata is not protected yet. Set up your phone's biometric lock.</div>
+        <button class="auth-btn" id="bio-enable">Enable Fingerprint</button>
+      </div>
+    `;
+    wrap.querySelector('#bio-enable').onclick=async()=>{
+      const ok=await registerBiometric();
+      if(ok){
+        saveState();
+        sessionUnlocked=true;
+        view={screen:'home',customerId:null};
+        render();
+      }
+    };
+    return wrap;
+  }
+
+  function renderLockScreen(){
+    const wrap=document.createElement('div');
+    wrap.className='auth-wrap';
+    wrap.innerHTML=`
+      <div class="auth-card">
+        <div style="text-align:center;font-size:52px;margin-bottom:8px;">🔐</div>
+        <h1>My Khata Locked</h1>
+        <div class="auth-sub">Use your fingerprint to continue.</div>
+        <button class="auth-btn" id="bio-unlock">🖐️ Unlock with Fingerprint</button>
+      </div>
+    `;
+    wrap.querySelector('#bio-unlock').onclick=unlockWithBiometric;
+    return wrap;
   }
 
 
