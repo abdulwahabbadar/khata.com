@@ -714,7 +714,7 @@
     }
 
     if(state.shop){
-        view = hasBiometricCredential()
+    view = hasLock()
           ? { screen:'lock', customerId:null }
           : { screen:'biometricSetup', customerId:null };
     } else {
@@ -847,9 +847,38 @@ function saveState() {
       showToast(e && e.name==='NotAllowedError' ? 'Fingerprint verification cancelled.' : 'Fingerprint verification failed.');
     }
   }
+  // ---------- DEVICE CHECK + PIN (desktop) ----------
+  const PIN_KEY = 'my-khata-pin-v1';
 
+  function isMobile(){
+    const ua = navigator.userAgent || '';
+    if(/Android|iPhone|iPad|iPod|Mobile/i.test(ua)) return true;
+    if(/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1) return true; // iPad
+    return false;
+  }
+
+  function hasPin(){ return !!localStorage.getItem(PIN_KEY); }
+
+  // mobile = fingerprint, desktop = PIN
+  function hasLock(){ return isMobile() ? hasBiometricCredential() : hasPin(); }
+
+  async function hashPin(pin){
+    try{
+      if(window.crypto && crypto.subtle){
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('khata-salt:'+pin));
+        return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      }
+    }catch(e){}
+    return 'plain:'+btoa(pin);
+  }
+
+  async function savePin(pin){ localStorage.setItem(PIN_KEY, await hashPin(pin)); }
+
+  async function checkPin(pin){ return localStorage.getItem(PIN_KEY) === await hashPin(pin); }
+
+  function validPin(p){ return /^\d{4,8}$/.test(p); }
   function lockApp(){
-    if(!hasBiometricCredential()) return;
+    if(!hasLock()) return;
     sessionUnlocked=false;
     modal=null;
     view={screen:'lock',customerId:null};
@@ -1417,20 +1446,29 @@ function saveState() {
 
 
   // ---------- SETUP / LOGIN ----------
-
+  
   function renderSetup(){
-
+    const mobile = isMobile();
     const wrap = document.createElement('div');
     wrap.className = 'auth-wrap';
     wrap.innerHTML = `
       <div class="auth-card">
         <h1>📒 Welcome</h1>
-        <div class="auth-sub">Set up your Khata. Fingerprint will be required to open it.</div>
+        <div class="auth-sub">${mobile ? 'Set up your Khata. Fingerprint will be required to open it.' : 'Set up your Khata. A PIN will be required to open it.'}</div>
         <div class="field">
           <label>Your Name (required)</label>
           <input type="text" id="su-owner" placeholder="e.g. Ahmed" autofocus>
         </div>
-        <button class="auth-btn" id="su-go">🖐️ Continue with Fingerprint</button>
+        ${mobile ? '' : `
+        <div class="field">
+          <label>Create PIN (4-8 digits)</label>
+          <input type="password" id="su-pin" inputmode="numeric" maxlength="8" placeholder="••••">
+        </div>
+        <div class="field">
+          <label>Confirm PIN</label>
+          <input type="password" id="su-pin2" inputmode="numeric" maxlength="8" placeholder="••••">
+        </div>`}
+        <button class="auth-btn" id="su-go">${mobile ? '🖐️ Continue with Fingerprint' : '🔑 Continue with PIN'}</button>
       </div>
     `;
 
@@ -1438,17 +1476,26 @@ function saveState() {
       const owner = wrap.querySelector('#su-owner').value.trim();
       if(!owner){ showToast('Please enter your name'); return; }
 
-      state.shop = { ownerName: capitalizeFirst(owner), shopName: null };
-      const ok = await registerBiometric();
+      let pin = null;
+      if(!mobile){
+        pin = wrap.querySelector('#su-pin').value.trim();
+        const pin2 = wrap.querySelector('#su-pin2').value.trim();
+        if(!validPin(pin)){ showToast('PIN must be 4 to 8 digits'); return; }
+        if(pin !== pin2){ showToast('PINs do not match'); return; }
+      }
 
-      if(!ok){
-        state.shop = null;
-        return;
+      state.shop = { ownerName: capitalizeFirst(owner), shopName: null };
+
+      if(mobile){
+        const ok = await registerBiometric();
+        if(!ok){ state.shop = null; return; }
+      } else {
+        await savePin(pin);
       }
 
       saveState();
       sessionUnlocked = true;
-      view = { screen:'home',customerId:null };
+      view = { screen:'home', customerId:null };
       render();
     };
 
@@ -1456,48 +1503,103 @@ function saveState() {
   }
 
   function renderBiometricSetup(){
-    const wrap=document.createElement('div');
-    wrap.className='auth-wrap';
-    wrap.innerHTML=`
-      <div class="auth-card">
-        <h1>🖐️ Fingerprint Lock</h1>
-        <div class="auth-sub">Your Khata is not protected yet. Set up your phone's biometric lock.</div>
-        <button class="auth-btn" id="bio-enable">Enable Fingerprint</button>
-      </div>
-    `;
-    wrap.querySelector('#bio-enable').onclick=async()=>{
-      const ok=await registerBiometric();
-      if(ok){
-        saveState();
-        sessionUnlocked=true;
-        view={screen:'home',customerId:null};
+    const mobile = isMobile();
+    const wrap = document.createElement('div');
+    wrap.className = 'auth-wrap';
+
+    if(mobile){
+      wrap.innerHTML = `
+        <div class="auth-card">
+          <h1>🖐️ Fingerprint Lock</h1>
+          <div class="auth-sub">Your Khata is not protected yet. Set up your phone's biometric lock.</div>
+          <button class="auth-btn" id="bio-enable">Enable Fingerprint</button>
+        </div>
+      `;
+      wrap.querySelector('#bio-enable').onclick = async ()=>{
+        const ok = await registerBiometric();
+        if(ok){
+          saveState();
+          sessionUnlocked = true;
+          view = { screen:'home', customerId:null };
+          render();
+        }
+      };
+    } else {
+      wrap.innerHTML = `
+        <div class="auth-card">
+          <h1>🔑 Set a PIN</h1>
+          <div class="auth-sub">Your Khata is not protected yet. Create a PIN (4-8 digits).</div>
+          <div class="field">
+            <label>Create PIN</label>
+            <input type="password" id="pin-new" inputmode="numeric" maxlength="8" placeholder="••••" autofocus>
+          </div>
+          <div class="field">
+            <label>Confirm PIN</label>
+            <input type="password" id="pin-new2" inputmode="numeric" maxlength="8" placeholder="••••">
+          </div>
+          <button class="auth-btn" id="pin-save">Save PIN</button>
+        </div>
+      `;
+      const go = async ()=>{
+        const p1 = wrap.querySelector('#pin-new').value.trim();
+        const p2 = wrap.querySelector('#pin-new2').value.trim();
+        if(!validPin(p1)){ showToast('PIN must be 4 to 8 digits'); return; }
+        if(p1 !== p2){ showToast('PINs do not match'); return; }
+        await savePin(p1);
+        sessionUnlocked = true;
+        view = { screen:'home', customerId:null };
         render();
-      }
-    };
+      };
+      wrap.querySelector('#pin-save').onclick = go;
+      wrap.querySelector('#pin-new2').addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+    }
     return wrap;
   }
 
   function renderLockScreen(){
-    const wrap=document.createElement('div');
-    wrap.className='auth-wrap';
-    wrap.innerHTML=`
-      <div class="auth-card">
-        <div style="text-align:center;font-size:52px;margin-bottom:8px;">🔐</div>
-        <h1>My Khata Locked</h1>
-        <div class="auth-sub">Use your fingerprint to continue.</div>
-        <button class="auth-btn" id="bio-unlock">🖐️ Unlock with Fingerprint</button>
-      </div>
-    `;
-    wrap.querySelector('#bio-unlock').onclick=unlockWithBiometric;
+    const mobile = isMobile();
+    const wrap = document.createElement('div');
+    wrap.className = 'auth-wrap';
+
+    if(mobile){
+      wrap.innerHTML = `
+        <div class="auth-card">
+          <div style="text-align:center;font-size:52px;margin-bottom:8px;">🔐</div>
+          <h1>My Khata Locked</h1>
+          <div class="auth-sub">Use your fingerprint to continue.</div>
+          <button class="auth-btn" id="bio-unlock">🖐️ Unlock with Fingerprint</button>
+        </div>
+      `;
+      wrap.querySelector('#bio-unlock').onclick = unlockWithBiometric;
+    } else {
+      wrap.innerHTML = `
+        <div class="auth-card">
+          <div style="text-align:center;font-size:52px;margin-bottom:8px;">🔐</div>
+          <h1>My Khata Locked</h1>
+          <div class="auth-sub">Enter your PIN to continue.</div>
+          <div class="field">
+            <input type="password" id="pin-input" inputmode="numeric" maxlength="8" placeholder="••••" autofocus style="text-align:center;letter-spacing:6px;">
+          </div>
+          <button class="auth-btn" id="pin-unlock">🔑 Unlock</button>
+        </div>
+      `;
+      const input = wrap.querySelector('#pin-input');
+      const go = async ()=>{
+        if(await checkPin(input.value.trim())){
+          sessionUnlocked = true;
+          view = { screen:'home', customerId:null };
+          render();
+        } else {
+          input.value = '';
+          showToast('Wrong PIN');
+        }
+      };
+      wrap.querySelector('#pin-unlock').onclick = go;
+      input.addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+      setTimeout(()=> input.focus(), 50);
+    }
     return wrap;
   }
-
-
-
-
-
-
-
   function renderProfit(){
 
     const wrap = document.createElement('div');
@@ -2300,7 +2402,7 @@ function saveState() {
   function resetAllData(){
 
     localStorage.removeItem(STORAGE_KEY);
-
+    localStorage.removeItem(PIN_KEY);
     LEGACY_STORAGE_KEYS.forEach(k=> localStorage.removeItem(k));
 
     state = { customers: [], inventory: [], capitalEntries: [], expenses: [], stockPurchases: [], shop: null };
