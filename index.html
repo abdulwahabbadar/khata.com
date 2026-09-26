@@ -1870,11 +1870,7 @@ function saveState() {
           <label id="su-pm-label">Your JazzCash Number</label>
           <input type="text" id="su-pm-account" placeholder="e.g. 03001234567">
         </div>
-        <div class="admin-info-box">
-          <b>Admin Panel</b>
-          <span>The admin password is fixed in the code and can be changed manually by the site owner.</span>
-        </div>
-        ${mobile ? '' : `
+       ${mobile ? '' : `
         <div class="field">
           <label>Create PIN (4-8 digits)</label>
           <input type="password" id="su-pin" inputmode="numeric" maxlength="8" placeholder="••••">
