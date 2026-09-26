@@ -617,17 +617,6 @@
     font-size:12px;margin-bottom:16px;line-height:1.5;
   }
   /* ---------- ADMIN PANEL ---------- */
-  .admin-info-box{
-    background:rgba(58,90,140,.08);
-    border:1px solid rgba(58,90,140,.20);
-    border-radius:10px;
-    padding:11px 12px;
-    margin:4px 0 14px;
-    font-size:12px;
-    line-height:1.5;
-    color:var(--ink-soft);
-  }
-  .admin-info-box b{display:block;color:var(--blue);margin-bottom:2px;font-size:13px;}
   .admin-panel-card{
     background:#fff8ea;
     border:1px solid var(--gold-line);
@@ -1870,7 +1859,7 @@ function saveState() {
           <label id="su-pm-label">Your JazzCash Number</label>
           <input type="text" id="su-pm-account" placeholder="e.g. 03001234567">
         </div>
-       ${mobile ? '' : `
+        ${mobile ? '' : `
         <div class="field">
           <label>Create PIN (4-8 digits)</label>
           <input type="password" id="su-pin" inputmode="numeric" maxlength="8" placeholder="••••">
