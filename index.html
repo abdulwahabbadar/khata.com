@@ -245,17 +245,19 @@
 
   .avatar img{width:100%;height:100%;object-fit:cover;}
 
-  .avatar-upload{position:relative;cursor:pointer;}
+  .detail-header .avatar{cursor:pointer;}
 
-  .avatar-upload .upload-badge{
+  .img-lightbox{position:fixed;inset:0;background:rgba(20,12,6,0.88);display:flex;align-items:center;justify-content:center;z-index:200;padding:24px;}
 
-    position:absolute;bottom:-2px;right:-2px;background:var(--gold);color:#fff;
+  .img-lightbox img{max-width:100%;max-height:75vh;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.5);}
 
-    width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  .img-lightbox .lb-close{position:absolute;top:16px;right:18px;background:rgba(255,255,255,0.15);color:#fff;border:none;font-size:20px;width:38px;height:38px;border-radius:50%;cursor:pointer;}
 
-    font-size:10px;border:2px solid var(--paper);
+  .img-lightbox .lb-content{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:100%;}
 
-  }
+  .img-lightbox .lb-placeholder{width:180px;height:180px;border-radius:50%;background:var(--ledger-red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:700;}
+
+  .img-lightbox .lb-change-btn{background:var(--gold);color:#fff;border:none;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:700;cursor:pointer;}
 
   .cust-name{font-size:17px;font-weight:700;}
 
@@ -569,6 +571,134 @@
 
   .pin-dots .dot.filled{background:var(--ledger-red);border-color:var(--ledger-red);}
 
+  /* Subscription / Admin */
+  .paymethod-row{display:flex;gap:10px;margin-bottom:14px;}
+  .paymethod-opt{
+    flex:1;text-align:center;padding:12px 8px;border-radius:10px;border:1px solid var(--gold-line);
+    background:var(--paper-dark);color:var(--ink-soft);font-weight:700;font-size:13px;cursor:pointer;
+  }
+  .paymethod-opt.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .sub-badge{
+    display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:14px;
+  }
+  .sub-badge.active{background:rgba(63,111,82,0.15);color:var(--paid-green);}
+  .sub-badge.inactive{background:rgba(139,38,53,0.12);color:var(--ledger-red);}
+  .plan-row{display:flex;gap:10px;margin-bottom:16px;}
+  .plan-card{
+    flex:1;border:2px solid var(--gold-line);border-radius:12px;padding:16px 10px;text-align:center;
+    background:#fff8ea;cursor:pointer;box-shadow:var(--card-shadow);
+  }
+  .plan-card.selected{border-color:var(--ledger-red);background:rgba(139,38,53,0.06);}
+  .plan-card .plan-name{font-weight:700;font-size:14px;margin-bottom:6px;}
+  .plan-card .plan-price{font-size:20px;font-weight:800;color:var(--ledger-red);}
+  .plan-card .plan-note{font-size:11px;color:var(--ink-soft);margin-top:4px;}
+  .pay-box{
+    background:var(--paper-dark);border:1px dashed var(--gold-line);border-radius:10px;
+    padding:14px;margin-bottom:16px;font-size:13px;line-height:1.6;
+  }
+  .pay-box b{color:var(--ledger-red);}
+  .wa-btn{
+    display:block;width:100%;background:#25D366;color:#fff;border:none;padding:13px;border-radius:10px;
+    font-size:15px;font-weight:700;cursor:pointer;margin-bottom:16px;text-decoration:none;text-align:center;
+  }
+  .code-box{
+    background:var(--ink);color:#F3E9D6;border-radius:10px;padding:16px;text-align:center;
+    font-family:monospace;font-size:22px;letter-spacing:2px;margin-bottom:8px;word-break:break-all;
+    user-select:all;
+  }
+  .code-label{font-size:12px;color:var(--ink-soft);font-weight:700;margin:16px 0 6px;text-transform:uppercase;}
+  .code-copy-btn{
+    width:100%;background:var(--blue);color:#fff;border:none;padding:10px;border-radius:8px;
+    font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px;
+  }
+  .admin-countdown{text-align:center;color:var(--ink-soft);font-size:12px;margin-bottom:18px;}
+  .admin-warn{
+    background:rgba(139,38,53,0.1);color:var(--ledger-red);border-radius:8px;padding:10px 12px;
+    font-size:12px;margin-bottom:16px;line-height:1.5;
+  }
+  /* ---------- ADMIN PANEL ---------- */
+  .admin-info-box{
+    background:rgba(58,90,140,.08);
+    border:1px solid rgba(58,90,140,.20);
+    border-radius:10px;
+    padding:11px 12px;
+    margin:4px 0 14px;
+    font-size:12px;
+    line-height:1.5;
+    color:var(--ink-soft);
+  }
+  .admin-info-box b{display:block;color:var(--blue);margin-bottom:2px;font-size:13px;}
+  .admin-panel-card{
+    background:#fff8ea;
+    border:1px solid var(--gold-line);
+    border-radius:18px;
+    padding:20px;
+    box-shadow:var(--card-shadow);
+  }
+  .admin-topline{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+    margin-bottom:16px;
+  }
+  .admin-title{font-size:23px;font-weight:800;color:var(--ledger-red);margin:0;}
+  .admin-subtitle{font-size:12px;color:var(--ink-soft);margin-top:3px;line-height:1.45;}
+  .admin-status{
+    white-space:nowrap;background:rgba(63,111,82,.12);color:var(--paid-green);
+    border:1px solid rgba(63,111,82,.2);border-radius:999px;padding:5px 9px;
+    font-size:10px;font-weight:800;
+  }
+  .admin-payment{
+    background:var(--paper-dark);
+    border:1px dashed var(--gold-line);
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:14px;
+    font-size:12px;
+    line-height:1.55;
+  }
+  .admin-payment strong{color:var(--ledger-red);}
+  .admin-code-card{
+    border:1px solid var(--gold-line);
+    border-radius:14px;
+    padding:14px;
+    margin-top:12px;
+    background:#fff;
+  }
+  .admin-code-head{
+    display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;
+  }
+  .admin-code-plan{font-weight:800;font-size:14px;color:var(--ink);}
+  .admin-code-price{font-size:12px;color:var(--ledger-red);font-weight:800;}
+  .admin-code-card .code-box{
+    margin:0 0 8px;
+    font-size:20px;
+    min-height:58px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .admin-copy{
+    width:100%;background:var(--blue);color:#fff;border:0;border-radius:9px;
+    padding:10px;font-size:13px;font-weight:800;cursor:pointer;
+  }
+  .admin-copy:focus,.admin-back:focus,.admin-help:focus{
+    outline:3px solid rgba(58,90,140,.3);outline-offset:2px;
+  }
+  .admin-help{
+    margin-top:14px;padding:11px;border-radius:10px;background:rgba(184,134,62,.08);
+    border:1px solid var(--gold-line);font-size:11px;color:var(--ink-soft);line-height:1.55;
+  }
+  .admin-actions{display:flex;gap:9px;margin-top:14px;}
+  .admin-actions button{flex:1;}
+  .admin-back{
+    background:transparent;color:var(--ink-soft);border:1px solid var(--gold-line);
+    border-radius:9px;padding:10px;font-weight:700;cursor:pointer;
+  }
+  .admin-keyboard{
+    margin-top:10px;font-size:10px;color:var(--ink-soft);text-align:center;
+  }
+  kbd{
+    border:1px solid var(--gold-line);background:var(--paper-dark);border-radius:4px;
+    padding:1px 5px;font-family:inherit;font-size:10px;
+  }
+
 </style>
 
 </head>
@@ -589,7 +719,7 @@
 
   const root = document.getElementById('root');
 
-  let state = { customers: [], inventory: [], capitalEntries: [], expenses: [], stockPurchases: [], shop: null };
+  let state = { customers: [], inventory: [], capitalEntries: [], expenses: [], stockPurchases: [], shop: null, subscription: { plan:null, activatedAt:null, expiresAt:null } };
 
   let view = { screen: 'home', customerId: null };
 
@@ -701,7 +831,7 @@
         try {
             state = JSON.parse(saved);
         } catch(e) {
-            state = { customers: [], inventory: [], capitalEntries: [], expenses: [], stockPurchases: [], shop: null };
+            state = { customers: [], inventory: [], capitalEntries: [], expenses: [], stockPurchases: [], shop: null, subscription: { plan:null, activatedAt:null, expiresAt:null } };
         }
     } else {
         state = {
@@ -710,9 +840,14 @@
             capitalEntries: [],
             expenses: [],
             stockPurchases: [],
-            shop: null
+            shop: null,
+            subscription: { plan:null, activatedAt:null, expiresAt:null }
         };
     }
+
+    // safety: older saved data may not have these fields yet
+    if(!state.subscription) state.subscription = { plan:null, activatedAt:null, expiresAt:null };
+    if(state.shop && !state.shop.paymentMethod) state.shop.paymentMethod = null;
 
     if(state.shop){
     view = hasLock()
@@ -884,6 +1019,182 @@ function saveState() {
     modal=null;
     view={screen:'lock',customerId:null};
     render();
+  }
+
+  // ---------- SUBSCRIPTION + ADMIN ACTIVATION SYSTEM ----------
+  const FREE_CUSTOMER_LIMIT = 100;
+  const PLAN_PRICES = { monthly: 49, yearly: 299 };
+  const PLAN_DAYS = { monthly: 30, yearly: 365 };
+  // TODO: replace with the real WhatsApp number that should receive payments (international format, no + or 0)
+  const ADMIN_WHATSAPP_NUMBER = '923703696526';
+  // TODO: change this to your own secret before publishing the site — anyone who reads the
+  // page source can see it, so this only stops casual guessing, not a determined developer.
+  const CODE_SECRET = 'WahabKhata-Secret-Change-Me';
+  const CODE_WINDOW_MS = 2*60*1000; // a new code every 2 minutes
+
+  function subscriptionActive(){
+    return !!(state.subscription && state.subscription.expiresAt && state.subscription.expiresAt > Date.now());
+  }
+  function canAddCustomer(){
+    return state.customers.length < FREE_CUSTOMER_LIMIT || subscriptionActive();
+  }
+
+  async function hashText(salt, text){
+    try{
+      if(window.crypto && crypto.subtle){
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt+':'+text));
+        return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      }
+    }catch(e){}
+    return 'plain:'+btoa(text);
+  }
+  // FIXED ADMIN PASSWORD — change this value manually whenever you want.
+  const ADMIN_PASSWORD = 'KHATA-ADMIN-2026';
+
+  async function saveAdminPassword(){
+    // Kept for compatibility with older saved data.
+    if(state.shop) delete state.shop.adminPasswordHash;
+    saveState();
+  }
+
+  async function checkAdminPassword(pw){
+    return !!state.shop && pw === ADMIN_PASSWORD;
+  }
+
+  // deterministic 2-minute rotating codes, shared between the admin panel and the
+  // customer's activation screen — no internet/server needed, both sides compute the
+  // same code from the current time window + the plan type.
+  function simpleHash(str){
+    let h = 5381;
+    for(let i=0;i<str.length;i++){ h = ((h*33) ^ str.charCodeAt(i)) >>> 0; }
+    return h;
+  }
+  function timeWindow(offset){ return Math.floor(Date.now()/CODE_WINDOW_MS) + (offset||0); }
+  const ZW_CHARS = ['\u200B','\u200C','\u200D','\uFEFF']; // invisible characters woven into the code
+  function codeForWindow(win, plan){
+    const raw = simpleHash(CODE_SECRET+'|'+plan+'|'+win);
+    const base = raw.toString(36).toUpperCase().padStart(8,'0').slice(0,8);
+    let out = '';
+    for(let i=0;i<base.length;i++){
+      out += base[i];
+      if(i%2===1) out += ZW_CHARS[(raw >>> (i*2)) % ZW_CHARS.length];
+    }
+    return out;
+  }
+  function currentCode(plan){ return codeForWindow(timeWindow(0), plan); }
+  function verifyActivationCode(input, plan){
+    if(!input) return false;
+    const candidates = [-1,0,1].map(off=> codeForWindow(timeWindow(off), plan));
+    return candidates.includes(input.trim());
+  }
+  function activateSubscription(plan){
+    const days = PLAN_DAYS[plan] || 30;
+    state.subscription = { plan, activatedAt: Date.now(), expiresAt: Date.now() + days*DAY };
+    saveState();
+  }
+  function waLink(plan){
+    const shop = shopTitle();
+    const amount = PLAN_PRICES[plan];
+    const methodLabel = state.shop && state.shop.paymentMethod==='easypaisa' ? 'EasyPaisa' : 'JazzCash';
+    const account = (state.shop && state.shop.paymentAccount) || 'N/A';
+    const text = encodeURIComponent(`Hi, I paid Rs ${amount} for my "${shop}" Khata ${plan} subscription.\nPaid from ${methodLabel} number: ${account}\nPlease send me the activation code.`);
+    return `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${text}`;
+  }
+
+  // ---------- SINGLE-LETTER APP SHORTCUTS ----------
+  // N/A -> New Account, S -> Add Stock, C -> Capital, E -> Expense, I -> Inventory,
+  // F -> Finance, P -> Profit, B -> Back, L -> Lock. Only fire outside text fields,
+  // outside modals, and while the main app is unlocked.
+  function shortcutOpenNewCustomer(){ view={screen:'home',customerId:null}; modal={type:'newCustomer'}; render(); }
+  function shortcutAddStock(){ view={screen:'inventory',customerId:null}; modal={type:'addStock'}; render(); }
+  function shortcutAddCapital(){ view={screen:'finance',customerId:null}; modal={type:'addCapital'}; render(); }
+  function shortcutAddExpense(){ view={screen:'finance',customerId:null}; modal={type:'addExpense'}; render(); }
+  function shortcutProfit(){ view={screen:'profit',customerId:null}; render(); }
+  function goBackShortcut(){
+    if(view.screen==='detail'){
+      goHome();
+    }else if(view.screen==='inventory' || view.screen==='profit' || view.screen==='finance' || view.screen==='subscribe'){
+      goHome();
+    }else if(view.screen==='adminPanel' || view.screen==='adminLogin'){
+      view = sessionUnlocked ? {screen:'home',customerId:null} : {screen:'lock',customerId:null};
+      render();
+    }
+  }
+  const SHORTCUT_ACTIONS = {
+    n: shortcutOpenNewCustomer,
+    a: shortcutOpenNewCustomer,
+    s: shortcutAddStock,
+    c: shortcutAddCapital,
+    e: shortcutAddExpense,
+    i: goInventory,
+    f: goFinance,
+    p: shortcutProfit,
+    b: goBackShortcut,
+    l: lockApp
+  };
+  function runAppShortcut(letter){
+    if(!sessionUnlocked || modal) return;
+    const mainScreens = ['home','detail','inventory','profit','finance','subscribe'];
+    if(mainScreens.indexOf(view.screen)===-1) return;
+    const action = SHORTCUT_ACTIONS[letter];
+    if(action) action();
+  }
+
+  // ---------- HIDDEN ADMIN TRIGGER: type "admin" anywhere (outside a text field) ----------
+  // Shares the same keystream as the shortcuts above: a keystroke that could still be
+  // building toward "admin" is held for a beat before its shortcut runs, so typing the
+  // secret word plainly still works even though its letters overlap with shortcut keys.
+  let adminKeyBuffer = '';
+  let pendingShortcutTimer = null;
+  function cancelPendingShortcut(){
+    if(pendingShortcutTimer){ clearTimeout(pendingShortcutTimer); pendingShortcutTimer = null; }
+  }
+  document.addEventListener('keydown', function(e){
+    const active = document.activeElement;
+    const tag = (active && active.tagName) || '';
+    if(tag==='INPUT' || tag==='TEXTAREA' || (active && active.isContentEditable)) return;
+    if(!e.key || e.key.length!==1) return;
+
+    const lower = e.key.toLowerCase();
+    const prospective = (adminKeyBuffer + lower).slice(-5);
+
+    if(prospective==='admin'){
+      adminKeyBuffer='';
+      cancelPendingShortcut();
+      if(state.shop){
+        view = { screen:'adminLogin', customerId:null };
+        render();
+      }
+      return;
+    }
+
+    if('admin'.startsWith(prospective)){
+      adminKeyBuffer = prospective;
+      cancelPendingShortcut();
+      pendingShortcutTimer = setTimeout(()=>{ pendingShortcutTimer=null; runAppShortcut(lower); }, 450);
+      return;
+    }
+
+    adminKeyBuffer = 'admin'.startsWith(lower) ? lower : '';
+    cancelPendingShortcut();
+    runAppShortcut(lower);
+  });
+
+  // ---------- HIDDEN ADMIN TRIGGER (mobile): tap the title 7 times within 3 seconds ----------
+  let adminTapCount = 0;
+  let adminTapTimer = null;
+  function attachAdminTapTrigger(el){
+    if(!el) return;
+    el.addEventListener('click', function(){
+      adminTapCount++;
+      clearTimeout(adminTapTimer);
+      adminTapTimer = setTimeout(()=>{ adminTapCount = 0; }, 3000);
+      if(adminTapCount>=7){
+        adminTapCount = 0;
+        clearTimeout(adminTapTimer);
+        if(state.shop){ view = { screen:'adminLogin', customerId:null }; render(); }
+      }
+    });
   }
 
   
@@ -1306,6 +1617,31 @@ function saveState() {
 
   function avatarInner(c){ if(c.photo) return `<img src="${c.photo}">`; return initials(c.name); }
 
+  function openAvatarLightbox(c){
+    const ov = document.createElement('div');
+    ov.className = 'img-lightbox';
+    ov.innerHTML = `
+      <button class="lb-close" aria-label="Close">✕</button>
+      <div class="lb-content">
+        ${c.photo ? `<img src="${c.photo}" alt="${escapeHtml(c.name)}">` : `<div class="lb-placeholder">${initials(c.name)}</div>`}
+        <button class="lb-change-btn">📷 ${c.photo ? 'Change Photo' : 'Add Photo'}</button>
+      </div>
+    `;
+    ov.addEventListener('click', (e)=>{ if(e.target===ov || e.target.classList.contains('lb-close')) ov.remove(); });
+    ov.querySelector('.lb-change-btn').onclick = ()=>{
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = 'image/*';
+      input.onchange = (e)=>{
+        const file = e.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = ()=>{ setCustomerPhoto(c.id, reader.result); ov.remove(); };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    };
+    document.body.appendChild(ov);
+  }
+
 
 
   function wireEnterNav(box, confirmSelector){
@@ -1334,6 +1670,58 @@ function saveState() {
 
 
 
+
+  // ---------- KEYBOARD NAVIGATION ----------
+  // Tab works natively. Arrow keys move between visible controls/cards.
+  // Enter activates the focused button/card. Backspace goes back when not editing text.
+  function installKeyboardNavigation(){
+    if(document.__keyboardNavInstalled) return;
+    document.__keyboardNavInstalled = true;
+
+    document.addEventListener('keydown', function(e){
+      const active = document.activeElement;
+      const tag = (active && active.tagName) || '';
+      const editing = tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT' || (active && active.isContentEditable);
+
+      // Never hijack normal text editing/backspace.
+      if(editing) return;
+
+      const focusables = Array.from(document.querySelectorAll(
+        'button:not([disabled]), [tabindex="0"], input:not([disabled]), select:not([disabled]), textarea:not([disabled])'
+      )).filter(el=>el.offsetParent!==null);
+
+      if(!focusables.length) return;
+
+      const currentIndex = focusables.indexOf(active);
+
+      if(e.key==='ArrowDown' || e.key==='ArrowRight'){
+        e.preventDefault();
+        const next = focusables[Math.min(focusables.length-1, currentIndex+1)];
+        if(next) next.focus();
+        return;
+      }
+
+      if(e.key==='ArrowUp' || e.key==='ArrowLeft'){
+        e.preventDefault();
+        const prev = focusables[Math.max(0, currentIndex-1)];
+        if(prev) prev.focus();
+        return;
+      }
+
+      if(e.key==='Enter' && active && typeof active.click==='function'){
+        e.preventDefault();
+        active.click();
+        return;
+      }
+
+      if(e.key==='Backspace'){
+        // Backspace is a safe "back" shortcut outside text fields.
+        e.preventDefault();
+        goBackShortcut();
+      }
+    });
+  }
+
   // ---------- RENDER ----------
 
   function render(){
@@ -1345,6 +1733,8 @@ function saveState() {
     if(view.screen === 'setup'){ root.appendChild(renderSetup()); return; }
     if(view.screen === 'biometricSetup'){ root.appendChild(renderBiometricSetup()); return; }
     if(view.screen === 'lock'){ root.appendChild(renderLockScreen()); return; }
+    if(view.screen === 'adminLogin'){ root.appendChild(renderAdminLogin()); return; }
+    if(view.screen === 'adminPanel'){ root.appendChild(renderAdminPanel()); return; }
 
     if(!sessionUnlocked){
       view={screen:'lock',customerId:null};
@@ -1367,6 +1757,8 @@ function saveState() {
     else if(view.screen === 'profit') root.appendChild(renderProfit());
 
     else if(view.screen === 'finance') root.appendChild(renderFinance());
+
+    else if(view.screen === 'subscribe') root.appendChild(renderSubscribe());
 
 
 
@@ -1397,14 +1789,17 @@ function saveState() {
       <div><h1>${escapeHtml(shopTitle())}</h1><div class="sub">Customer credit ledger, stock &amp; finance</div></div>
 
       <div style="display:flex;align-items:center;gap:4px;">
+        <button class="lock-btn" id="sub-status-btn" title="Subscription">${subscriptionActive() ? '💳' : (state.customers.length>=FREE_CUSTOMER_LIMIT ? '⚠️' : '💳')}</button>
         <button class="lock-btn" id="lock-app-btn" title="Lock with Fingerprint">🔒</button>
         <button class="lock-btn" id="reset-all-btn" title="Delete All Data">🗑️</button>
       </div>
 
     `;
 
+    h.querySelector('#sub-status-btn').onclick = ()=>{ view={screen:'subscribe',customerId:null}; render(); };
     h.querySelector('#lock-app-btn').onclick = lockApp;
     h.querySelector('#reset-all-btn').onclick = ()=>{ modal={type:'resetAll'}; render(); };
+    attachAdminTapTrigger(h.querySelector('h1'));
 
     return h;
 
@@ -1460,6 +1855,25 @@ function saveState() {
           <label>Your Name (required)</label>
           <input type="text" id="su-owner" placeholder="e.g. Ahmed" autofocus>
         </div>
+        <div class="field">
+          <label>Shop Name</label>
+          <input type="text" id="su-shopname" placeholder="e.g. Ahmed General Store">
+        </div>
+        <div class="field">
+          <label>Payment Method (for subscription)</label>
+          <div class="paymethod-row">
+            <button type="button" class="paymethod-opt on" id="su-pm-jazzcash" data-val="jazzcash">JazzCash</button>
+            <button type="button" class="paymethod-opt" id="su-pm-easypaisa" data-val="easypaisa">EasyPaisa</button>
+          </div>
+        </div>
+        <div class="field">
+          <label id="su-pm-label">Your JazzCash Number</label>
+          <input type="text" id="su-pm-account" placeholder="e.g. 03001234567">
+        </div>
+        <div class="admin-info-box">
+          <b>Admin Panel</b>
+          <span>The admin password is fixed in the code and can be changed manually by the site owner.</span>
+        </div>
         ${mobile ? '' : `
         <div class="field">
           <label>Create PIN (4-8 digits)</label>
@@ -1473,9 +1887,36 @@ function saveState() {
       </div>
     `;
 
+    let selectedMethod = 'jazzcash';
+    const pmJazz = wrap.querySelector('#su-pm-jazzcash');
+    const pmEasy = wrap.querySelector('#su-pm-easypaisa');
+    const pmLabel = wrap.querySelector('#su-pm-label');
+    function selectMethod(m){
+      selectedMethod = m;
+      pmJazz.classList.toggle('on', m==='jazzcash');
+      pmEasy.classList.toggle('on', m==='easypaisa');
+      pmLabel.textContent = m==='jazzcash' ? 'Your JazzCash Number' : 'Your EasyPaisa Number';
+    }
+    pmJazz.onclick = ()=> selectMethod('jazzcash');
+    pmEasy.onclick = ()=> selectMethod('easypaisa');
+    // Left/Right arrows switch JazzCash <-> EasyPaisa directly, from either button.
+    [pmJazz, pmEasy].forEach(btn=>{
+      btn.addEventListener('keydown', (e)=>{
+        if(e.key==='ArrowLeft' || e.key==='ArrowRight'){
+          e.preventDefault();
+          selectMethod(selectedMethod==='jazzcash' ? 'easypaisa' : 'jazzcash');
+          (selectedMethod==='jazzcash' ? pmJazz : pmEasy).focus();
+        }
+      });
+    });
+
     wrap.querySelector('#su-go').onclick = async ()=>{
       const owner = wrap.querySelector('#su-owner').value.trim();
       if(!owner){ showToast('Please enter your name'); return; }
+
+      const shopName = wrap.querySelector('#su-shopname').value.trim();
+      const pmAccount = wrap.querySelector('#su-pm-account').value.trim();
+      if(!pmAccount){ showToast('Enter your ' + (selectedMethod==='jazzcash'?'JazzCash':'EasyPaisa') + ' number'); return; }
 
       let pin = null;
       if(!mobile){
@@ -1485,7 +1926,12 @@ function saveState() {
         if(pin !== pin2){ showToast('PINs do not match'); return; }
       }
 
-      state.shop = { ownerName: capitalizeFirst(owner), shopName: null };
+      state.shop = {
+        ownerName: capitalizeFirst(owner),
+        shopName: shopName || null,
+        paymentMethod: selectedMethod,
+        paymentAccount: pmAccount
+      };
 
       if(mobile){
         const ok = await registerBiometric();
@@ -1494,6 +1940,7 @@ function saveState() {
         await savePin(pin);
       }
 
+      await saveAdminPassword();
       saveState();
       sessionUnlocked = true;
       view = { screen:'home', customerId:null };
@@ -1572,6 +2019,7 @@ function saveState() {
         </div>
       `;
       wrap.querySelector('#bio-unlock').onclick = unlockWithBiometric;
+      attachAdminTapTrigger(wrap.querySelector('h1'));
     } else {
       wrap.innerHTML = `
         <div class="auth-card">
@@ -1597,10 +2045,235 @@ function saveState() {
       };
       wrap.querySelector('#pin-unlock').onclick = go;
       input.addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+      attachAdminTapTrigger(wrap.querySelector('h1'));
       setTimeout(()=> input.focus(), 50);
     }
     return wrap;
   }
+
+  // ---------- SUBSCRIPTION SCREEN ----------
+  let subscribePlan = 'monthly';
+  function renderSubscribe(){
+    const wrap = document.createElement('div');
+    const active = subscriptionActive();
+    const used = state.customers.length;
+
+    wrap.innerHTML = `
+      <button class="back-btn" id="sub-back">&larr; Back</button>
+      <h2 style="margin:0 0 6px;">Subscription</h2>
+      <div class="sub-badge ${active?'active':'inactive'}">
+        ${active
+          ? '✅ Active — ' + (state.subscription.plan==='yearly'?'Yearly':'Monthly') + ' plan, valid till ' + fmtDate(state.subscription.expiresAt)
+          : '⚠️ Free plan — ' + used + ' / ' + FREE_CUSTOMER_LIMIT + ' customers used'}
+      </div>
+      ${active ? '' : `
+      <div class="plan-row">
+        <div class="plan-card ${subscribePlan==='monthly'?'selected':''}" id="plan-monthly">
+          <div class="plan-name">Monthly</div>
+          <div class="plan-price">Rs ${PLAN_PRICES.monthly}</div>
+          <div class="plan-note">per month</div>
+        </div>
+        <div class="plan-card ${subscribePlan==='yearly'?'selected':''}" id="plan-yearly">
+          <div class="plan-name">Yearly</div>
+          <div class="plan-price">Rs ${PLAN_PRICES.yearly}</div>
+          <div class="plan-note">per year — best value</div>
+        </div>
+      </div>
+      <div class="pay-box">
+        Send <b>Rs ${PLAN_PRICES[subscribePlan]}</b> via <b>${state.shop.paymentMethod==='easypaisa'?'EasyPaisa':'JazzCash'}</b>
+        to <b>${ADMIN_WHATSAPP_NUMBER.replace(/^92/,'0')}</b> (My Khata).<br>
+        Then tap the button below to message us on WhatsApp with your payment proof.
+      </div>
+      <a class="wa-btn" id="sub-wa" href="${waLink(subscribePlan)}" target="_blank" rel="noopener">📲 Message on WhatsApp</a>
+      <div class="field">
+        <label>Enter Activation Code (sent to you on WhatsApp)</label>
+        <input type="text" id="sub-code" placeholder="Paste the code here" autocomplete="off">
+      </div>
+      <button class="auth-btn" id="sub-activate">Activate Subscription</button>
+      `}
+    `;
+
+    wrap.querySelector('#sub-back').onclick = goHome;
+
+    if(!active){
+      const mCard = wrap.querySelector('#plan-monthly');
+      const yCard = wrap.querySelector('#plan-yearly');
+      mCard.onclick = ()=>{ subscribePlan='monthly'; render(); };
+      yCard.onclick = ()=>{ subscribePlan='yearly'; render(); };
+
+      wrap.querySelector('#sub-activate').onclick = ()=>{
+        const code = wrap.querySelector('#sub-code').value;
+        if(verifyActivationCode(code, subscribePlan)){
+          activateSubscription(subscribePlan);
+          showToast('Subscription activated!');
+          view={screen:'home',customerId:null};
+          render();
+        } else {
+          showToast('Invalid or expired code. Please check with the sender.');
+        }
+      };
+      wrap.querySelector('#sub-code').addEventListener('keydown', e=>{
+        if(e.key==='Enter'){
+          e.preventDefault();
+          wrap.querySelector('#sub-activate').click();
+        }
+      });
+    }
+
+    return wrap;
+  }
+
+  // ---------- ADMIN LOGIN + PANEL ----------
+  function renderAdminLogin(){
+    const wrap = document.createElement('div');
+    wrap.className = 'auth-wrap';
+    wrap.innerHTML = `
+      <div class="auth-card">
+        <h1>Admin Panel</h1>
+        <div class="auth-sub">Enter the fixed admin password to generate subscription activation codes.</div>
+        <div class="field">
+          <label for="admin-pw-input">Admin Password</label>
+          <input type="password" id="admin-pw-input" placeholder="Enter admin password" autocomplete="off" autofocus>
+        </div>
+        <button class="auth-btn" id="admin-pw-go">Unlock Admin Panel</button>
+        <button class="auth-link" id="admin-pw-cancel">Back</button>
+        <div class="admin-keyboard"><kbd>Tab</kbd> navigate · <kbd>Enter</kbd> submit · <kbd>Backspace</kbd> go back</div>
+      </div>
+    `;
+
+    const goBack = ()=>{
+      view = sessionUnlocked ? {screen:'home',customerId:null} : {screen:'lock',customerId:null};
+      render();
+    };
+
+    wrap.querySelector('#admin-pw-cancel').onclick = goBack;
+    const input = wrap.querySelector('#admin-pw-input');
+    const go = async ()=>{
+      if(!state.shop){ goBack(); return; }
+      if(await checkAdminPassword(input.value)){
+        view = {screen:'adminPanel',customerId:null};
+        render();
+      }else{
+        input.value = '';
+        showToast('Wrong admin password');
+        input.focus();
+      }
+    };
+
+    wrap.querySelector('#admin-pw-go').onclick = go;
+    input.addEventListener('keydown', e=>{
+      if(e.key==='Enter'){ e.preventDefault(); go(); }
+      if(e.key==='Backspace' && !input.value){ e.preventDefault(); goBack(); }
+    });
+    setTimeout(()=>input.focus(),50);
+    return wrap;
+  }
+
+  let adminTickTimer = null;
+
+  function renderAdminPanel(){
+    clearInterval(adminTickTimer);
+    const wrap = document.createElement('div');
+    wrap.className = 'auth-wrap';
+
+    function secondsLeft(){
+      return CODE_WINDOW_MS/1000 - Math.floor((Date.now()%CODE_WINDOW_MS)/1000);
+    }
+
+    wrap.innerHTML = `
+      <div class="admin-panel-card">
+        <div class="admin-topline">
+          <div>
+            <h1 class="admin-title">Admin Panel</h1>
+            <div class="admin-subtitle">Generate and copy activation codes for My Khata subscriptions.</div>
+          </div>
+          <div class="admin-status">● SECURE SESSION</div>
+        </div>
+
+        <div class="admin-payment">
+          <b>Payment Instructions</b><br>
+          Customer pays the selected plan amount through the configured payment method,
+          then sends the payment screenshot on WhatsApp:
+          <strong>03703696526</strong>.
+        </div>
+
+        <div class="admin-warn">
+          Codes change automatically every 2 minutes. Always use <b>Copy Code</b> and paste the
+          copied code into WhatsApp. Do not manually retype it because it contains invisible characters.
+        </div>
+
+        <div class="admin-countdown">Current code expires/rotates in <b><span id="admin-countdown">${secondsLeft()}</span>s</b></div>
+
+        <div class="admin-code-card">
+          <div class="admin-code-head">
+            <span class="admin-code-plan">Monthly Plan</span>
+            <span class="admin-code-price">Rs 49 / 30 days</span>
+          </div>
+          <div class="code-box" id="code-monthly">${currentCode('monthly')}</div>
+          <button class="admin-copy" id="copy-monthly">Copy Monthly Code</button>
+        </div>
+
+        <div class="admin-code-card">
+          <div class="admin-code-head">
+            <span class="admin-code-plan">Yearly Plan</span>
+            <span class="admin-code-price">Rs 299 / 365 days</span>
+          </div>
+          <div class="code-box" id="code-yearly">${currentCode('yearly')}</div>
+          <button class="admin-copy" id="copy-yearly">Copy Yearly Code</button>
+        </div>
+
+        <div class="admin-help">
+          <b>Keyboard:</b>
+          <kbd>Tab</kbd> move between controls,
+          <kbd>Arrow Up/Down</kbd> move between buttons,
+          <kbd>Enter</kbd> activate focused button,
+          <kbd>Backspace</kbd> return to the previous screen.
+        </div>
+
+        <div class="admin-actions">
+          <button class="admin-back" id="admin-back">Back to App</button>
+        </div>
+      </div>
+    `;
+
+    async function copyCode(plan){
+      try{
+        await navigator.clipboard.writeText(currentCode(plan));
+        showToast('Code copied with hidden characters. Paste it directly into WhatsApp.');
+      }catch(e){
+        showToast('Clipboard access failed. Focus the code and copy it manually.');
+      }
+    }
+
+    wrap.querySelector('#copy-monthly').onclick = ()=>copyCode('monthly');
+    wrap.querySelector('#copy-yearly').onclick = ()=>copyCode('yearly');
+
+    wrap.querySelector('#admin-back').onclick = ()=>{
+      clearInterval(adminTickTimer);
+      view = sessionUnlocked ? {screen:'home',customerId:null} : {screen:'lock',customerId:null};
+      render();
+    };
+
+    adminTickTimer = setInterval(()=>{
+      if(view.screen!=='adminPanel'){
+        clearInterval(adminTickTimer);
+        return;
+      }
+      const cd = wrap.querySelector('#admin-countdown');
+      const cm = wrap.querySelector('#code-monthly');
+      const cy = wrap.querySelector('#code-yearly');
+      if(!cd || !cm || !cy){
+        clearInterval(adminTickTimer);
+        return;
+      }
+      cd.textContent = secondsLeft();
+      cm.textContent = currentCode('monthly');
+      cy.textContent = currentCode('yearly');
+    },1000);
+
+    return wrap;
+  }
+
   function renderProfit(){
 
     const wrap = document.createElement('div');
@@ -1911,7 +2584,10 @@ function saveState() {
 
     addBtn.textContent = '+ New Account';
 
-    addBtn.onclick = ()=>{ modal={type:'newCustomer'}; render(); };
+    addBtn.onclick = ()=>{
+      if(!canAddCustomer()){ view={screen:'subscribe',customerId:null}; render(); return; }
+      modal={type:'newCustomer'}; render();
+    };
 
     wrap.appendChild(addBtn);
 
@@ -2109,13 +2785,11 @@ function saveState() {
 
       <div class="cust-top">
 
-        <label class="avatar avatar-upload" for="photo-input">${avatarInner(c)}<span class="upload-badge">📷</span></label>
+        <div class="avatar" id="cust-dp">${avatarInner(c)}</div>
 
         <div><div class="cust-name">${escapeHtml(c.name)}</div><div class="cust-date">Account opened: ${fmtDate(c.createdAt)}</div></div>
 
       </div>
-
-      <input type="file" id="photo-input" accept="image/*" style="display:none;">
 
       <div class="totals-row">
 
@@ -2133,17 +2807,7 @@ function saveState() {
 
     wrap.appendChild(dh);
 
-    dh.querySelector('#photo-input').onchange = (e)=>{
-
-      const file = e.target.files[0]; if(!file) return;
-
-      const reader = new FileReader();
-
-      reader.onload = ()=> setCustomerPhoto(c.id, reader.result);
-
-      reader.readAsDataURL(file);
-
-    };
+    dh.querySelector('#cust-dp').addEventListener('click', ()=> openAvatarLightbox(c));
 
 
 
@@ -2406,7 +3070,7 @@ function saveState() {
     localStorage.removeItem(PIN_KEY);
     LEGACY_STORAGE_KEYS.forEach(k=> localStorage.removeItem(k));
 
-    state = { customers: [], inventory: [], capitalEntries: [], expenses: [], stockPurchases: [], shop: null };
+    state = { customers: [], inventory: [], capitalEntries: [], expenses: [], stockPurchases: [], shop: null, subscription: { plan:null, activatedAt:null, expiresAt:null } };
 
     sessionTimes = {};
 
@@ -2910,6 +3574,7 @@ function saveState() {
 
 
 
+  installKeyboardNavigation();
   loadState();
 
 })();
