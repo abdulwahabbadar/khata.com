@@ -39,7 +39,7 @@
 <div id="g-sub" style="font-size:12px;color:#5B4636;margin-bottom:14px"></div>
 <div id="g-w" style="display:flex;align-items:center;margin-bottom:10px;border:1px solid rgba(184,134,62,.35);border-radius:10px;background:#fff;overflow:hidden">
   <input id="g-e" type="text" placeholder="Username" autocomplete="username" autocapitalize="none" style="${inp};border:0;border-radius:0;flex:1;min-width:0;outline:none">
-  <span id="g-dom" style="padding:0 12px;color:#5B4636;font-size:14px">@gmail.com</span>
+  <span id="g-dom" style="padding:0 12px;color:#5B4636;font-size:14px"></span>
 </div>
 <input id="g-p" type="password" placeholder="Password" autocomplete="new-password" style="${inp};margin-bottom:10px;outline:none">
 <div id="g-m" style="color:#8B2635;font-size:12px;font-weight:700;min-height:18px"></div>
