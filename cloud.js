@@ -43,7 +43,7 @@
 </div>
 <input id="g-p" type="password" placeholder="Password" autocomplete="new-password" style="${inp};margin-bottom:10px;outline:none">
 <div id="g-m" style="color:#8B2635;font-size:12px;font-weight:700;min-height:18px"></div>
-<button id="g-fp" hidden style="background:none;border:0;color:#8B2635;font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:0 0 8px;text-decoration:underline">Forgot password?</button>
+<button id="g-fp" hidden style="background:none;border:0;color:#8B2635;font:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:0 0 8px;text-decoration:underline"></button>
 <button id="g-go" style="${btn}background:#8B2635;color:#fff"></button>
 <button id="g-sw" style="${btn}background:transparent;color:#5B4636;border:1px solid rgba(184,134,62,.35)"></button></div>`;
       document.body.appendChild(d);
