@@ -4,7 +4,6 @@
   const p = (new URLSearchParams(location.search).get('p') || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 12);
   const sfx = p ? '-' + p : '', KEY = 'khata-data' + sfx, K = n => 'kh_' + n + sfx;
   let sb = null, uid = null, email = '', timer = null, busy = false;
-  const shareCache = {};
   const T = (pr, ms) => Promise.race([pr, new Promise((_, j) => setTimeout(() => j(new Error('timeout')), ms || 8000))]);
   const read = () => { try { return JSON.parse(ls.getItem(KEY)); } catch (e) { return null; } };
 
@@ -110,12 +109,6 @@
   }
 
   // ---------- push: send data to the server (stays queued as dirty while offline) ----------
-  function snap(c, d) {
-    const e = (c.entries || []).map(x => x.type === 'item' ? { t: x.time, k: 'i', n: x.item, q: x.qty, r: x.rate, a: x.total } : { t: x.time, k: 'p', a: x.amount });
-    const bal = e.reduce((s, x) => s + (x.k === 'i' ? x.a : -x.a), 0);
-    const item = { token: c.shareToken, name: c.name, shop: (d.shop && (d.shop.shopName || d.shop.ownerName)) || '', balance: bal, entries: e };
-    return { token: c.shareToken, item, hash: JSON.stringify(item) };
-  }
   async function flush() {
     if (busy || !sb || !uid || !navigator.onLine || !ls.getItem(K('dirty'))) return;
     busy = true;
@@ -131,8 +124,6 @@
       }
       ls.setItem(K('ver'), r.data.version);
       if (ls.getItem(K('dirty')) === mark) ls.removeItem(K('dirty'));
-      const sh = (d.customers || []).filter(c => c.shareToken).map(c => snap(c, d)).concat(d.fullToken && d.fullExp && Date.now() < d.fullExp - 120000 ? [snapFull(d)] : []).filter(s => shareCache[s.token] !== s.hash);
-      if (sh.length) { const r2 = await sb.rpc('sync_shares', { p_items: sh.map(s => s.item) }); if (!r2.error) sh.forEach(s => shareCache[s.token] = s.hash); }
     } catch (e) { /* offline or server error: data stays dirty and will be retried */ }
     finally { busy = false; }
   }
@@ -149,13 +140,25 @@
   const api = {
     email: '',
     push() { ls.setItem(K('dirty'), Date.now()); clearTimeout(timer); timer = setTimeout(flush, 1500); },
-    token() { const a = new Uint8Array(18); crypto.getRandomValues(a); return [...a].map(b => b.toString(16).padStart(2, '0')).join(''); },
     wa(c, bal, shop) {
       let ph = (c.phone || '').replace(/\D/g, '');
       if (ph.startsWith('0')) ph = '92' + ph.slice(1);
-      const link = new URL('customer.html', location.href).href + '#' + c.shareToken;
-      const txt = `Assalam o Alaikum ${c.name},\n${shop} ka hisab:\nBaqaya balance: Rs ${Math.round(bal).toLocaleString('en-US')}\nPura khata yahan dekhein: ${link}`;
-      window.open('https://wa.me/' + ph + '?text=' + encodeURIComponent(txt), '_blank');
+      const R = n => 'Rs ' + Math.round(n).toLocaleString('en-US');
+      const D = ms => new Date(ms).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      const E = (c.entries || []).slice().sort((a, b) => a.time - b.time);
+      let paid = 0, credit = 0;
+      const L = E.map(x => {
+        if (x.type === 'item') { credit += x.total; return D(x.time) + ': ' + x.item + ' ' + x.qty + ' x ' + R(x.rate) + ' = ' + R(x.total); }
+        paid += x.amount; return D(x.time) + ': Payment mili ' + R(x.amount);
+      });
+      const head = 'Assalam o Alaikum ' + c.name + ',\n' + shop + ' ka poora hisab:\n-----------------\n';
+      const foot = '-----------------\nKul udhaar: ' + R(credit) + '\nPayment mili: ' + R(paid) + '\n*Baqaya: ' + R(bal) + '*';
+      let lines = L, note = '';
+      const build = () => head + note + lines.join('\n') + (lines.length ? '\n' : '') + foot;
+      while (lines.length > 1 && encodeURIComponent(build()).length > 6500) { // WhatsApp link ki lambai ki hadd
+        lines = lines.slice(1); note = '(Purani ' + (L.length - lines.length) + ' entries chhodi gayi, baqaya poora sahi hai)\n';
+      }
+      window.open('https://wa.me/' + ph + '?text=' + encodeURIComponent(build()), '_blank');
     }
   };
   window.__ks = api;
@@ -172,51 +175,6 @@
   document.addEventListener('visibilitychange', () => { if (!document.hidden) resync(); });
   setInterval(() => { if (!document.hidden) resync(); }, 60000);
 
-
-  // ---------- full-data share link (read-only report) ----------
-  function snapFull(d) {
-    const K2 = window.__kd, tot = (K2 && K2.fin && K2.fin()) || {};
-    const item = {
-      token: d.fullToken, full: true, exp: d.fullHrs || 3, shop: (d.shop && (d.shop.shopName || d.shop.ownerName)) || '', owner: (d.shop && d.shop.ownerName) || '', totals: tot,
-      customers: (d.customers || []).map(c => { const s = snap(Object.assign({}, c, { shareToken: 'x' }), d).item; return { name: c.name, phone: c.phone || '', balance: s.balance, entries: s.entries }; }),
-      inventory: (d.inventory || []).map(i => ({ n: i.name, q: i.qty, c: i.costRate, s: i.sellRate })),
-      capital: (d.capitalEntries || []).map(x => ({ t: x.time, a: x.amount, n: x.note })),
-      expenses: (d.expenses || []).map(x => ({ t: x.time, a: x.amount, n: x.label, c: x.category })),
-      purchases: (d.stockPurchases || []).map(x => ({ t: x.time, n: x.product, q: x.qty, a: x.amount })),
-      bills: (d.bills || []).map(b => ({ n: b.name, a: b.amount, due: b.due, rep: b.repeat, c: b.cat }))
-    };
-    return { token: d.fullToken, item, hash: JSON.stringify(item) };
-  }
-  async function fullShare(hrs) {
-    const D = window.__kd; if (!D || !sb) return;
-    const d = D.get();
-    if (hrs || !d.fullToken || !d.fullExp || d.fullExp <= Date.now()) { // naya temporary link
-      hrs = hrs || 3;
-      if (d.fullToken) { try { await sb.rpc('revoke_share', { p_token: d.fullToken }); } catch (e) {} delete shareCache[d.fullToken]; }
-      d.fullToken = api.token(); d.fullHrs = hrs; d.fullExp = Date.now() + hrs * 3600000; D.save();
-    }
-    flush();
-    const link = new URL('report.html', location.href).href + '#' + d.fullToken;
-    const left = Math.max(0, d.fullExp - Date.now()), lh = Math.floor(left / 3600000), lm = Math.round(left % 3600000 / 60000);
-    const bs = 'border:0;border-radius:8px;padding:9px 12px;font:inherit;font-weight:700;cursor:pointer;color:#fff;background:';
-    const o = document.createElement('div');
-    o.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(43,27,18,.55);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Inter,sans-serif';
-    o.innerHTML = `<div style="max-width:380px;width:100%;background:#fff8ea;border-radius:16px;padding:18px;color:#2B1B12">
-<h3 style="margin:0 0 6px;color:#8B2635">🔗 Poora Khata Link</h3>
-<div style="font-size:12px;color:#5B4636;line-height:1.5;margin-bottom:10px">Is link se koi bhi aap ka <b>poora data</b> (customers, stock, capital, expenses, rent &amp; bills) dekh sakta hai, badal nahi sakta. Link <b>${lh} ghante ${lm} minute</b> baad khud band ho jayega. Sirf bharosemand insaan ko bhejein.${navigator.onLine ? '' : '<br><b style="color:#8B2635">Abhi offline hain: internet aane par link kaam karega.</b>'}</div>
-<input readonly value="${link}" style="width:100%;padding:10px;border:1px solid rgba(184,134,62,.35);border-radius:8px;font-size:12px;margin-bottom:10px;box-sizing:border-box">
-<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><button id="f-wa" style="${bs}#25D366">📲 WhatsApp</button><button id="f-cp" style="${bs}#3A5A8C">Copy</button></div>
-<div style="border-top:1px dashed rgba(184,134,62,.5);padding-top:10px;font-size:12px;color:#5B4636">Naya link banayein (purana band ho jayega):
-<div style="display:flex;gap:8px;margin-top:6px"><select id="f-h" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(184,134,62,.35);font:inherit"><option value="1">1 ghanta</option><option value="3">3 ghante</option><option value="24">24 ghante</option></select><button id="f-rs" style="${bs}#5B4636">Naya link</button><button id="f-x" style="${bs}#8B2635">Band</button></div></div></div>`;
-    document.body.appendChild(o);
-    const q = i => o.querySelector(i);
-    q('#f-h').value = String(d.fullHrs || 3);
-    q('#f-x').onclick = () => o.remove();
-    q('#f-wa').onclick = () => window.open('https://wa.me/?text=' + encodeURIComponent('Mera khata dekhein (' + lh + ' ghante ke liye): ' + link), '_blank');
-    q('#f-cp').onclick = async () => { try { await navigator.clipboard.writeText(link); q('#f-cp').textContent = 'Copied ✔'; } catch (e) { q('input').select(); } };
-    q('#f-rs').onclick = () => { const h = +q('#f-h').value; o.remove(); fullShare(h); };
-  }
-  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#full-share-btn')) fullShare(); });
 
   // ---------- PWA: service worker, update notice, install button ----------
   function pill(txt, fn) {
