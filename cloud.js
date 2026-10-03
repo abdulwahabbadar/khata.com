@@ -138,6 +138,7 @@
 
   // ---------- public helpers ----------
   const api = {
+    rpc(fn, args) { return sb ? sb.rpc(fn, args) : Promise.resolve({ error: { message: 'Not connected' } }); },
     email: '',
     push() { ls.setItem(K('dirty'), Date.now()); clearTimeout(timer); timer = setTimeout(flush, 1500); },
     wa(c, bal, shop) {
