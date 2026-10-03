@@ -1,6 +1,6 @@
-const CACHE = "khata-v4";
+const CACHE = "khata-v5";
 const LIB = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js";
-const FILES = ["./", "./index.html", "./script.js", "./cloud.js", "./config.js", "./customer.html", "./report.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
+const FILES = ["./", "./index.html", "./script.js", "./cloud.js", "./config.js", "./manifest.json", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 const FONT = /^https:\/\/fonts\.(googleapis|gstatic)\.com\//;
 
 self.addEventListener("install", e => {
